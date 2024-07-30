@@ -1,0 +1,2 @@
+The application scans wifi networks and performs geolocation using GPS,
+records information about found networks, signal level and current position in the database.
