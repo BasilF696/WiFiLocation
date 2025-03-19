@@ -111,22 +111,18 @@ class MainActivity : AppCompatActivity() {
             override fun onLocationChanged(location: Location) {
                 val latitude = location.latitude
                 val longitude = location.longitude
-
-//                Thread {
-                val coordinateId = coordinateDao.insert(Coordinate(latitude = latitude, longitude = longitude)).toInt()
                 // Получение списка Wi-Fi сетей
                 val wifiScanResults: List<ScanResult> = wifiManager.scanResults
+
+//                val coordinateId = coordinateDao.insert(Coordinate(latitude = latitude, longitude = longitude)).toInt()
+//                for (wifi in wifiScanResults) {
+//                    // Сохранение сети Wi-Fi (BSSID уникальный)
+//                    networkDao.insert(Network(bssid = wifi.BSSID, ssid = wifi.SSID))
+//                    // Сохранение измерения сигнала
+//                    measurementDao.insert(Measurement(networkBSSID = wifi.BSSID, coordinateID = coordinateId, signalLevel = wifi.level))
+//                }
+
                 val wifiInfo = wifiManager.connectionInfo
-
-
-                for (wifi in wifiScanResults) {
-                    // Сохранение сети Wi-Fi (BSSID уникальный)
-                    networkDao.insert(Network(bssid = wifi.BSSID, ssid = wifi.SSID))
-
-                    // Сохранение измерения сигнала
-                    measurementDao.insert(Measurement(networkBSSID = wifi.BSSID, coordinateID = coordinateId, signalLevel = wifi.level))
-                }
-
                 val wifiList = wifiScanResults.sortedByDescending { it.level }.joinToString("\n") { "${it.SSID} [${it.BSSID}]:  ${it.level} dBm" }
                 val resultText = """
                     📍 GPS-координаты:
