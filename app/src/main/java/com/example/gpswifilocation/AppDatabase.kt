@@ -3,7 +3,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Network::class, Coordinate::class, Measurement::class], version = 1)
+@Database(
+    entities = [Network::class, Coordinate::class, Measurement::class],
+    version = 1,
+    exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun networkDao(): NetworkDao
     abstract fun coordinateDao(): CoordinateDao
@@ -15,9 +18,9 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context.applicationContext,
+                    context,
                     AppDatabase::class.java,
-                    "app_database"
+                    "app-database"
                 ).build()
                 INSTANCE = instance
                 instance

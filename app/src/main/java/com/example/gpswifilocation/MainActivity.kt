@@ -25,7 +25,7 @@ import AppDatabase
 import NetworkDao
 import CoordinateDao
 import MeasurementDao
-
+import android.util.Log
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,17 +44,20 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val LOCATION_PERMISSION_CODE = 100
-        private const val WIFI_PERMISSION_CODE = 101
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        db = AppDatabase.getDatabase(this)
-        networkDao = db.networkDao()
-        coordinateDao = db.coordinateDao()
-        measurementDao = db.measurementDao()
+        try {
+            db = AppDatabase.getDatabase(this)
+            networkDao = db.networkDao()
+            coordinateDao = db.coordinateDao()
+            measurementDao = db.measurementDao()
+        } catch (e: Exception) {
+            Log.e("DatabaseError", "Ошибка при создании БД", e)
+        }
 
         resultTextView = findViewById(R.id.resultTextView)
         scrollView = findViewById(R.id.scrollView)
@@ -114,13 +117,32 @@ class MainActivity : AppCompatActivity() {
                 // Получение списка Wi-Fi сетей
                 val wifiScanResults: List<ScanResult> = wifiManager.scanResults
 
-//                val coordinateId = coordinateDao.insert(Coordinate(latitude = latitude, longitude = longitude)).toInt()
-//                for (wifi in wifiScanResults) {
-//                    // Сохранение сети Wi-Fi (BSSID уникальный)
-//                    networkDao.insert(Network(bssid = wifi.BSSID, ssid = wifi.SSID))
-//                    // Сохранение измерения сигнала
-//                    measurementDao.insert(Measurement(networkBSSID = wifi.BSSID, coordinateID = coordinateId, signalLevel = wifi.level))
-//                }
+                var coordinateId: Int = -1
+                try {
+                    coordinateId = coordinateDao.insert(Coordinate(latitude = latitude, longitude = longitude)).toInt()
+                } catch (e: Exception) {
+                    Log.e("DatabaseError", "Ошибка при вставке записи coordinate", e)
+                }
+                for (wifi in wifiScanResults) {
+                    try {
+                        // Сохранение сети Wi-Fi (BSSID уникальный)
+                        networkDao.insert(Network(bssid = wifi.BSSID, ssid = wifi.SSID))
+                    } catch (e: Exception) {
+                        Log.e("DatabaseError", "Ошибка при вставке записи network", e)
+                    }
+                    try {
+                        // Сохранение измерения сигнала
+                        measurementDao.insert(
+                            Measurement(
+                                networkBSSID = wifi.BSSID,
+                                coordinateID = coordinateId,
+                                signalLevel = wifi.level
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Log.e("DatabaseError", "Ошибка при вставке записи measurement", e)
+                    }
+                }
 
                 val wifiInfo = wifiManager.connectionInfo
                 val wifiList = wifiScanResults.sortedByDescending { it.level }.joinToString("\n") { "${it.SSID} [${it.BSSID}]:  ${it.level} dBm" }
