@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 
 @Entity(tableName = "Coordinates")
 data class Coordinate(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "latitude") val latitude: Double,
     @ColumnInfo(name = "longitude") val longitude: Double
 )

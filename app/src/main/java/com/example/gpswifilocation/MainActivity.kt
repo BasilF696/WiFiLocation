@@ -117,30 +117,30 @@ class MainActivity : AppCompatActivity() {
                 // Получение списка Wi-Fi сетей
                 val wifiScanResults: List<ScanResult> = wifiManager.scanResults
 
-                var coordinateId: Int = -1
+                var coordinateId: Long = -1
                 try {
-                    coordinateId = coordinateDao.insert(Coordinate(latitude = latitude, longitude = longitude)).toInt()
+                    coordinateId = coordinateDao.insert(Coordinate(latitude = latitude, longitude = longitude))
                 } catch (e: Exception) {
-                    Log.e("DatabaseError", "Ошибка при вставке записи coordinate", e)
+                    Log.e("DatabaseError", "Ошибка при вставке координат", e)
                 }
                 for (wifi in wifiScanResults) {
+                    var bssidId: Long = -1
                     try {
                         // Сохранение сети Wi-Fi (BSSID уникальный)
-                        networkDao.insert(Network(bssid = wifi.BSSID, ssid = wifi.SSID))
+                        bssidId = networkDao.insert(Network(bssid = wifi.BSSID, ssid = wifi.SSID))
                     } catch (e: Exception) {
-                        Log.e("DatabaseError", "Ошибка при вставке записи network", e)
+                        Log.e("DatabaseError", "Ошибка при вставке сети", e)
                     }
                     try {
-                        // Сохранение измерения сигнала
                         measurementDao.insert(
                             Measurement(
-                                networkBSSID = wifi.BSSID,
+                                networkID = bssidId,
                                 coordinateID = coordinateId,
                                 signalLevel = wifi.level
                             )
                         )
                     } catch (e: Exception) {
-                        Log.e("DatabaseError", "Ошибка при вставке записи measurement", e)
+                        Log.e("DatabaseError", "Ошибка при вставке измерения", e)
                     }
                 }
 
